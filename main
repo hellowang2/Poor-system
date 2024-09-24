@@ -1,0 +1,394 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Dec 16 22:36:47 2023
+
+@author: user
+"""
+
+import pandas as pd
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
+def get_user_choice(options, message):
+    print(message)
+    for i, option in enumerate(options, start=1):
+        print(f"{i}. {option}")
+    choice = input("請輸入選擇的編號：")
+    return options[int(choice) - 1] if choice.isdigit() and 1 <= int(choice) <= len(options) else None
+
+def search_data_f(dataframe, search_s):
+    search_data = dataframe.copy()
+    for key, value in search_s.items():
+        search_data = search_data[search_data[key] == value]
+    return search_data
+
+
+def display_selected_travel_data(dataframe):
+    for index, row in dataframe.iterrows():
+        print(f'Area Description: {row["areaDesc"]}')
+        print(f'Area Description (EN): {row["areaDesc_EN"]}')
+        print(f'Time: {row["effective"]}')
+        print(f'Alert Title: {row["alert_title"]}')
+        print(f'Severity Level: {row["severity_level"]}')
+        print(f'Alert Disease: {row["alert_disease"]}')
+        print(f'SenderName: {row["senderName"]}')
+        print('-----------------------------------------------------------')
+
+    if dataframe.empty:
+        print("抱歉，資料無錄入")
+
+
+def display_selected_snake_place_data(dataframe):
+    for index, row in dataframe.iterrows():
+        print(f'區域別: {row["區域別"]}')
+        print(f'縣市別: {row["縣市別"]}')
+        print(f'抗蛇毒血清種類: {row["抗蛇毒血清種類"]}')
+        print(f'醫療院所名稱: {row["醫療院所名稱"]}')
+        print(f'電話: {row["電話"]}')
+        print(f'地址: {row["地址"]}')
+        print(f'經度: {row["經度"]}')
+        print(f'緯度: {row["緯度"]}')
+        print(f'十碼章: {row["十碼章"]}')
+        print('-----------------------------------------------------------')
+
+    if dataframe.empty:
+        print("抱歉，資料無錄入")
+
+def search_snake(df):
+    while True:
+        print("1.搜尋地區")
+        print("2.搜尋血清種類")
+        print("3.精確搜尋(地區+蛇種)")
+        print("4.文字搜尋")
+        print("H. 回到首頁")
+        choice = input("請輸入選擇的編號：")
+        if choice == '1':
+            while True:
+                area_options = df['縣市別'].unique()
+                selected_area = get_user_choice(area_options, "請選擇地區，或輸入'B'回到上一頁，'H'回到首頁：")
+                if selected_area.upper() == 'H' :
+                    continue
+                else:
+                    search_s = {'縣市別': selected_area}
+                    search_data = search_data_f(df, search_s)
+                    display_selected_snake_place_data(search_data)
+                    again_selected = input("是否要重新查詢縣市，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+        elif choice == '2':
+            while True:
+                antivenom_options = df['抗蛇毒血清種類'].unique()
+                selected_antivenom = get_user_choice(antivenom_options, "請選擇抗蛇毒血清種類，或輸入'B'回到上一頁，'H'回到首頁：")
+                if selected_antivenom.upper() == 'H' :
+                    continue
+                else:
+                    search_s = {'抗蛇毒血清種類': selected_antivenom}
+                    search_data = search_data_f(df, search_s)
+                    display_selected_snake_place_data(search_data)
+                    again_selected = input("是否要重新查詢血清種類，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B':
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+        elif choice == '3':
+            while True:
+                area_options = df['縣市別'].unique()
+                selected_area = get_user_choice(area_options, "請選擇地區：")
+                if selected_area.upper() == 'H':
+                    return
+                else:
+                    while True:
+                        antivenom_options = df['抗蛇毒血清種類'].unique()
+                        selected_antivenom = get_user_choice(antivenom_options, "請選擇抗蛇毒血清種類：")
+                        if selected_antivenom.upper() == 'H':
+                            continue
+                        else:
+                            search_s = {'縣市別' : selected_area, '抗蛇毒血清種類' : selected_antivenom}
+                            search_data = search_data_f(df, search_s)
+                            display_selected_snake_place_data(search_data)
+                            again_selected = input("是否要重新查詢血清種類，要請按'B'，不要請按'C':")
+                            if again_selected.upper() == 'B' :
+                                continue
+                            elif again_selected.upper() == 'C' :
+                                break
+                            else:
+                                break
+                    again_selected = input("是否要重新查詢縣市，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+        elif choice == '4':
+            while True:
+                keyword = input("請輸入搜尋關鍵字：")
+                search_data = df[df.apply(lambda row: any(keyword.lower() in str(cell).lower() for cell in row), axis=1)]
+                display_selected_snake_place_data(search_data)
+                again_selected = input("是否要重新進行文字搜尋，是請按'B'，否請按'C':")
+                if again_selected.upper() == 'B' :
+                    continue
+                elif again_selected.upper() == 'C' :
+                    break
+                else:
+                    break            
+        elif choice.upper() == 'H' :
+            break
+        else:
+            print("請輸入有效的選項。")
+
+def display_selected_disease_data(dataframe):
+    for index, row in dataframe.iterrows():
+        print(f'Question: {row["Question"]}')
+        print(f'Answer: {row["Answer1"]}')
+        print('---')
+
+    if dataframe.empty:
+        print("抱歉，無資訊")
+
+def travel_alert_system(df):
+    while True:
+        print("1.地名搜尋")
+        print("2.疾病搜尋")
+        print("3.警示等級搜尋")
+        print("4.精密搜尋(地名+等級)")
+        print("5.精密搜尋(地名+疾病)")
+        print("6.文字搜尋")
+        choice = input("請輸入選擇的編號，或輸入'H' 回首頁：")
+        #previous_search_s = {}
+
+        if choice == '1':
+            while True:
+                area_options = df['areaDesc'].unique()
+                selected_area = get_user_choice(area_options, "請選擇地名，或輸入'B'回上一頁：，'H'回首頁")
+                if selected_area.upper() == 'B' :
+                    continue
+                elif selected_area.upper() == 'H' :
+                    #previous_search_s = {}
+                    break
+                else:
+                    search_s = {'areaDesc': selected_area}
+                    #previous_search_s = search_s
+                    search_data = search_data_f(df, search_s)
+                    display_selected_travel_data(search_data)
+                    again_selected = input("是否要重新查詢地名，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+        elif choice == '2':
+          while True:
+            condition_options = df['alert_disease'].unique()
+            selected_condition = get_user_choice(condition_options, "請選擇疾病名稱，或輸入'B'回到上一頁，'H'回到首頁：")
+            if selected_condition.upper() == 'B' :
+              continue
+              
+            elif selected_condition.upper() == 'H' :
+                #previous_search_s = {}
+                break
+            else:
+                search_s = {'alert_disease': selected_condition}
+                #previous_search_s = search_s
+                search_data = search_data_f(df, search_s)
+                display_selected_travel_data(search_data)
+                again_selected = input("是否要重新查詢疾病，要請按'B'，不要請按'C':")
+                if again_selected.upper() == 'B' :
+                  continue
+                elif again_selected.upper() == 'C' :
+                  break
+                else:
+                  break
+
+        elif choice == '3':
+            while True:
+                severity_options = df['severity_level'].unique()
+                severity_options = ['解除', '第一級:注意(Watch)', '第二級:警示(Alert)', '第三級:警告(Warning)']
+                selected_severity = get_user_choice(severity_options, "請選擇警示等級，或輸入'B'回到上一頁，'H'回到首頁：")
+                if selected_severity.upper() == 'B' :
+                    continue
+                elif selected_severity.upper() == 'H' :
+                    #previous_search_s = {}
+                    break
+                else:
+                    search_s = {'severity_level': selected_severity}
+                    #previous_search_s = search_s
+                    search_data = search_data_f(df, search_s)
+                    display_selected_travel_data(search_data)
+                    again_selected = input("是否要重新查詢等級，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+
+        elif choice == '4':
+            while True:
+                area_options = df['areaDesc'].unique()
+                selected_area = get_user_choice(area_options, "請選擇地名：")
+                if selected_area.upper() == 'B' :
+                    continue
+                elif selected_area.upper() == 'H' :
+                    #previous_search_s = {}
+                    break
+                else:
+                    while True:
+                        severity_options = df['severity_level'].unique()
+                        severity_options = ['解除', '第一級:注意(Watch)', '第二級:警示(Alert)', '第三級:警告(Warning)']
+                        selected_severity = get_user_choice(severity_options, "請選擇警示等級：")
+                        if selected_severity.upper() == 'B' :
+                            continue
+                        elif selected_severity.upper() == 'H' :
+                            #previous_search_s = {}
+                            break
+                        else:
+                            search_s = {'areaDesc': selected_area, 'severity_level': selected_severity}
+                            #previous_search_s = search_s
+                            search_data = search_data_f(df, search_s)
+                            display_selected_travel_data(search_data)
+                            again_selected = input("是否要重新查詢等級，要請按'B'，不要請按'C':")
+                            if again_selected.upper() == 'B' :
+                                continue
+                            elif again_selected.upper() == 'C' :
+                                break
+                            else:
+                                break
+                    again_selected = input("是否要重新查詢地名，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break
+                            
+
+        elif choice == '5':
+            while True:
+                area_options = df['areaDesc'].unique()
+                selected_area = get_user_choice(area_options, "請選擇地名：")
+                if selected_area.upper() == 'B' :
+                    continue
+                elif selected_area.upper() == 'H' :
+                   #previous_search_s = {}
+                    break
+                else:
+                    while True:
+                        condition_options = df['alert_disease'].unique()
+                        selected_condition = get_user_choice(condition_options, "請選擇疾病名稱：")
+                        if selected_condition.upper() == 'B' :
+                            continue
+                        elif selected_condition.upper() == 'H' :
+                            #previous_search_s = {}
+                            break
+                        else:
+                            search_s = {'areaDesc': selected_area, 'alert_disease': selected_condition}
+                            #previous_search_s = search_s
+                            search_data = search_data_f(df, search_s)
+                            display_selected_travel_data(search_data)
+                            again_selected = input("是否要重新查詢疾病，要請按'B'，不要請按'C':")
+                            if again_selected.upper() == 'B' :
+                              continue
+                            elif again_selected.upper() == 'C' :
+                              break
+                            else:
+                              break
+                    again_selected = input("是否要重新查詢地名，要請按'B'，不要請按'C':")
+                    if again_selected.upper() == 'B' :
+                        continue
+                    elif again_selected.upper() == 'C' :
+                        break
+                    else:
+                        break    
+        elif choice == '6':
+            while True:
+                keyword = input("請輸入搜尋關鍵字：")
+                search_data = df_travel[df_travel.apply(lambda row: any(keyword.lower() in str(cell).lower() for cell in row), axis=1)]
+                display_selected_travel_data(search_data)
+                again_selected = input("是否要重新進行文字搜尋，是請按'B'，否請按'C':")
+                if again_selected.upper() == 'B' :
+                    continue
+                elif again_selected.upper() == 'C' :
+                    break
+                else:
+                    break
+
+        elif choice.upper() == 'H' :
+            #previous_search_s = {}
+            break
+        else:
+            print("請輸入有效的選項。")
+
+def disease(df_q_a):
+
+    while True:
+        choice = input("1.選項 2.文字搜索H.回首頁")
+        if choice == '1':
+            while True:
+                print("\n疾病資訊:\n")
+                disease_options = df_q_a['Disease'].unique()
+                selected_disease = get_user_choice(disease_options, "請選擇疾病：")
+        
+                if selected_disease == 'B' or selected_disease == 'b':
+                    break
+                elif selected_disease is not None:
+                    disease_data = df_q_a[df_q_a['Disease'] == selected_disease]
+        
+                    if not disease_data.empty:
+                        for index, row in disease_data.iterrows():
+                            print(f'Question: {row["Question"]}')
+                            print(f'Answer: {row["Answer1"]}')
+                        again_selected = input("是否要重新進行資訊選項搜尋，是請按'B'，否請按'C':")
+                        if again_selected.upper() == 'B' :
+                            continue
+                        elif again_selected.upper() == 'C' :
+                            break
+                        else:
+                            break
+                    else:
+                        print("抱歉，無資訊。")
+        elif choice == '2':
+            while True:
+                keyword = input("請輸入搜尋關鍵字：")
+                search_data = df_q_a[df_q_a['Disease'].str.contains(keyword, case=False, na=False, regex=True)]
+                display_selected_disease_data(search_data)
+                again_selected = input("是否要重新進行文字搜尋，是請按'B'，否請按'C':")
+                if again_selected.upper() == 'B' :
+                    continue
+                elif again_selected.upper() == 'C' :
+                    break
+                else:
+                    break
+        elif choice.upper() == 'H' :
+            break        
+        
+
+if __name__ == "__main__":#"if __name__ == "__main__""與檔案、模組調用有關，在這裡也可以不用這行
+    url_travel = 'https://od.cdc.gov.tw/cdc/TCDCTravelAlert.csv'
+    df_travel = pd.read_csv(url_travel)
+    
+    url_disease = 'https://od.cdc.gov.tw/pr/CDC_chatbox.csv'
+    df_q_a = pd.read_csv(url_disease)
+    
+    url_snake = 'https://od.cdc.gov.tw/rdvd/snake_place.csv'
+    df_snake = pd.read_csv(url_snake)
+    while True:
+        select = input("Poor System\n\n1.國際旅遊疫情安全速查系統\n2.基礎疾病Q&A\n3.蛇毒血清區域醫療院所查詢\nother. exit\nWhat can I help you?")
+        if select == '1':
+            travel_alert_system(df_travel)
+        elif select == '2':
+            disease(df_q_a)
+        elif select == '3':
+            search_snake(df_snake)
+        else:
+            break
+
+    print("System shut down...")
